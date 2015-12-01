@@ -14,47 +14,36 @@ from random import randint
 import copy
 
 ##################################################
-# The search space class 'warehouse'             #
+# The search space class 'game'                  #
 # This class is a sub-class of 'StateSpace'      #
 ##################################################
 
-class warehouse(StateSpace):
-    def __init__(self, action, gval, product_list, packing_station_list, current_time, open_orders, robot_status, parent = None):
+class game(StateSpace):
+    def __init__(self, action, gval, size, current_time, obstacles_list, player, enemy, parent = None):
         StateSpace.__init__(self, action, gval, parent)
+        self.size = size #symmetrical size of game board
         self.current_time = current_time
-        self.product_list = product_list
-        self.packing_station_list = packing_station_list
-        self.open_orders = open_orders
-        self.robot_status = robot_status
-        #Each robot status item rs_i is itself a list in the format [<name>, <status>, <loc>, <ftime>]
-    
+        self.obstacles_list = obstacles_list #list of unnavigable loc
+        self.player = player
+        self.enemy = enemy
+        #Each player and enemy itself a list in the format [x, y]
+        
 #IMPLEMENT
-        """Initialize a warehouse search state object."""
-    def find_station_loc(self, name):
-        #return tuple of packing station coords
-        for station in self.packing_station_list:
-            if (name == station[0]):
-                return station[1]
+        """Initialize a game search state object."""
 
-    def find_product_loc(self, name):
-        #return tuple of package coords
-        for product in self.product_list:
-            if (name == product[0]):
-                return product[1]
+    def get_obstacles_list(self):
+        #return list of obstacles
+        return obstacles_list
+            
     def find_min_delivery(self):
         tmp = [] #return min delivery action time
         for robot in self.robot_status:
             if (len(robot) > 3):
                 tmp.append(robot[3])
-        if (tmp == []):
+        if (not tmp):
             return 0
-        return min(tmp)
-    def idle_to_delivery(self):
-        for robot in self.robot_status:
-            if (robot[1] == 'idle'):
-                return robot
-        
-    
+        return min(tmp)   
+
     def successors(self):
     #IMPLEMENT    
         States = list()
@@ -240,18 +229,17 @@ def heur_min_completion_time(state):
         TIME2 = max(station_distances) 
     return max(TIME1, TIME2)
 
-def warehouse_goal_fn(state):
+def game_goal_fn(state):
 #IMPLEMENT
-    '''Have we reached the goal when all orders have been delivered'''
-    for robot in state.robot_status:
-        if (robot[1] == 'on_delivery' and (len(state.open_orders) == 0)):
-            return True
+    '''Have we reached the goal when an enemy is on same loc as player'''
+    if (state.player[1 == state.enemy.loc):
+        return True
     return False
 
-def make_init_state(product_list, packing_station_list, current_time, open_orders, robot_status):
+def make_init_state(size, current_time, obstacles_list, player, enemy):
 #IMPLEMENT
 
-    return warehouse("START", 0, product_list, packing_station_list, current_time, open_orders, robot_status)
+    return game("START", 0, size, current_time, obstacles_list, player, enemy)
     
     
     '''Input the following items which specify a state and return a warehouse object 

@@ -1,6 +1,6 @@
 import tkinter as tk
 class GameBoard(tk.Frame):
-    def __init__(self, parent, rows=8, columns=8, size=32, color1="white", color2="brown"):
+    def __init__(self, parent, rows=8, columns=8, size=32, color1="pink", color2="brown"):
         '''size is the size of a square, in pixels'''
 
         self.rows = rows
@@ -28,6 +28,7 @@ class GameBoard(tk.Frame):
         self.canvas.bind_all("<Right>", self.RightHandler)
         self.canvas.bind_all("<Up>", self.UpHandler)
         self.canvas.bind_all("<Down>", self.DownHandler)
+        self.canvas.bind_all("<F1>", self.QuitHandler)
 
     def addpiece(self, name, image, row=0, column=0):
         '''Add a piece to the playing board'''
@@ -83,9 +84,9 @@ class GameBoard(tk.Frame):
     def RightHandler(self, event):
         for name in self.pieces:
             if name == 'player1':
-                new_row = self.pieces[name][1] + 1
-                new_col = self.pieces[name][0]
-                self.placepiece(name, new_row, new_col,self.pieces[name][2])
+                new_row = self.pieces[name][1]
+                new_col = self.pieces[name][0] + 1
+                self.placepiece(name, new_row, new_col, self.pieces[name][2])
         #placepiece(self, name, row, column, itemID)
         print("pressed{}".format("Right"))
         
@@ -94,8 +95,10 @@ class GameBoard(tk.Frame):
         
     def DownHandler(self, event):
         print("pressed{}".format("Down"))
-        
 
+    def QuitHandler(self, event):
+        print("pressed{}".format("f1"))
+        quit()
 
 # image comes from the silk icon set which is under a Creative Commons
 # license. For more information see http://www.famfamfam.com/lab/icons/silk/
