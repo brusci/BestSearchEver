@@ -1,6 +1,6 @@
 import tkinter as tk
 class GameBoard(tk.Frame):
-    def __init__(self, parent, rows=8, columns=8, size=32, color1="pink", color2="brown"):
+    def __init__(self, parent, rows=8, columns=8, size=32, color1="white", color2="white"):
         '''size is the size of a square, in pixels'''
 
         self.rows = rows
@@ -77,24 +77,53 @@ class GameBoard(tk.Frame):
             self.canvas.delete(self.pieces[name][2])
             del self.pieces[name]
             return
+    def CheckMove(self, pos):
+        for name in self.pieces:
+            if (self.pieces[name][1:] == pos):
+                print("you hit me")
+        if (pos % 7 == 0):
+            print("pos: ", pos, "pos % 7", pos % 7, "you hit me")
+            return False
+        else:
+            return True
         
     def LeftHandler(self, event):
-        print("pressed{}".format("Left"))
+        for name in self.pieces:
+              if (name == 'player1'):
+                  if (self.pieces[name][1] == 7 or self.CheckMove(self.pieces[name][1])):
+                      self.pieces[name] = (self.pieces[name][0], self.pieces[name][1] - 1, self.pieces[name][2])
+                      new_row = self.pieces[name][0]
+                      self.placepiece(name, new_row, self.pieces[name][1], self.pieces[name][2])
+                      print("(x,y):", self.pieces[name][1], self.pieces[name][2])
+        #placepiece(self, name, row, column, itemID)
         
     def RightHandler(self, event):
         for name in self.pieces:
-            if name == 'player1':
-                new_row = self.pieces[name][1]
-                new_col = self.pieces[name][0] + 1
-                self.placepiece(name, new_row, new_col, self.pieces[name][2])
+              if (name == 'player1'):
+                  if (self.pieces[name][1] == 0 or self.CheckMove(self.pieces[name][1])):
+                      self.pieces[name] = (self.pieces[name][0], self.pieces[name][1]+ 1, self.pieces[name][2])
+                      new_row = self.pieces[name][0]
+                      self.placepiece(name, new_row, self.pieces[name][1], self.pieces[name][2])
+                      print("(x,y):", self.pieces[name][1], self.pieces[name][2])
         #placepiece(self, name, row, column, itemID)
-        print("pressed{}".format("Right"))
         
     def UpHandler(self, event):
         print("pressed{}".format("Up"))
+        for name in self.pieces:
+              if (name == 'player1'):
+                  if (self.pieces[name][1] == 7 or self.CheckMove(self.pieces[name][0])):
+                      self.pieces[name] = (self.pieces[name][0] - 1, self.pieces[name][1], self.pieces[name][2])
+                      new_row = self.pieces[name][0]
+                      self.placepiece(name, new_row, self.pieces[name][0], self.pieces[name][1])
         
     def DownHandler(self, event):
         print("pressed{}".format("Down"))
+        for name in self.pieces:
+              if (name == 'player1'):
+                  if (self.pieces[name][1] == 0 or self.CheckMove(self.pieces[name][0])):
+                      self.pieces[name] = (self.pieces[name][0] - 1, self.pieces[name][1], self.pieces[name][2])
+                      new_row = self.pieces[name][0]
+                      self.placepiece(name, new_row, self.pieces[name][0], self.pieces[name][1])
 
     def QuitHandler(self, event):
         print("pressed{}".format("f1"))
