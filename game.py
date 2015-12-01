@@ -20,17 +20,17 @@ import copy
 
 class game(StateSpace):
     def __init__(self, action, gval, size, current_time, obstacles_list, player, enemy, parent = None):
+        """Initialize a game search state object."""
+        #IMPLEMENT
+        
         StateSpace.__init__(self, action, gval, parent)
         self.size = size #symmetrical size of game board
         self.current_time = current_time
         self.obstacles_list = obstacles_list #list of unnavigable loc
-        self.player = player
+        self.player = copy.deepcopy(player)
         self.enemy = enemy
-        #Each player and enemy itself a list in the format [x, y]
+        #Each player and enemy itself a list in the format [x, y, num_steps]
         
-#IMPLEMENT
-        """Initialize a game search state object."""
-
     def get_obstacles_list(self):
         #return list of obstacles
         return obstacles_list
@@ -45,52 +45,57 @@ class game(StateSpace):
         return min(tmp)   
 
     def successors(self):
-    #IMPLEMENT    
+        #IMPLEMENT    
         States = list()
-
-        iterate_copy = copy.deepcopy(self.get_orders())
-        for order in iterate_copy:
-            for robot in self.robot_status:
-                orders_copy = copy.deepcopy(iterate_copy)
-                robots_copy = copy.deepcopy(self.get_robot_status())
-                if (robot[1] == 'idle'):
-                    product_coords = self.find_product_loc(order[0])
-                    station_coords = self.find_station_loc(order[1])
-                    robot_to_product = abs(robot[2][0] - product_coords[0]) + abs(robot[2][1] - product_coords[1])
-                    product_to_station = abs(product_coords[0] - station_coords[0]) + abs(product_coords[1] - station_coords[1])
-                    
-                    robot_copy = copy.deepcopy(robot) #make a copy of robot and change it's coords, status, and action time
-                    robot_copy[1] = 'on_delivery'
-                    robot_copy[2] = station_coords
-                    robot_copy.append(robot_to_product + product_to_station)
-                    robots_copy[robots_copy.index(robot)] = robot_copy
-                    orders_copy.remove(order)
-                    
-                    action_print = "deliver({},{},{}).".format(robot_copy[0],order[0],order[1])
-                    States.append( warehouse(action_print, self.gval+1, self.product_list, self.packing_station_list, self.current_time, orders_copy, robots_copy, self) )
-                    
-        robots_copy2 = copy.deepcopy(self.get_robot_status())
-        orders_copy2 = copy.deepcopy(self.get_orders())  
-        min_move = self.find_min_delivery() #take the minimum of all action-cost on-delivery robots
-        action_print = "move_forward({})".format(min_move)
-        new_time = self.current_time + min_move
-        deliver_add = 0
-
-        for robot in robots_copy2:
-            deliver_add +=1
-            if ((robot[1] == 'on_delivery') and (robot[3] <= min_move)): #if on-delivery and time cost is less than min_move, update
-                robot[1] = 'idle'
-                del robot[-1]
-        if (deliver_add > 0): #check if at least one action has been made, if so this is a new state and must be appended
-            States.append( warehouse(action_print, self.gval+1, self.product_list, self.packing_station_list, new_time, orders_copy2, robots_copy2, self) )
+        
+        # Try moving enemy LEFT
+        if (self.enemy[0] - 1 >= 0):
+            enemy_copy = copy.deepcopy(self.enemy) #make a copy of the enemy and change it's coords and num_steps
+            enemy_copy[0] = self.enemy[0] - 1
+            enemy_copy[1] = self.enemy[1]
+            new_enemy_to_player = abs(enemy_copy[0] - self.player[0]) + abs(enemy_copy[1] - self.player[1])
+            enemy_copy.append(new_enemy_to_player)
+            action_print = "move_to({},{})".format(enemy_copy[0], enemy_copy[1])
+            States.append( game(action_print, self.gval+1, self.size, self.current_time+1, self.obstacles_list, self.player, enemy_copy, self) )
+        
+        # Try moving enemy RIGHT
+        if (self.enemy[0] - 1 < self.size):
+            enemy_copy = copy.deepcopy(self.enemy) #make a copy of the enemy and change it's coords and num_steps
+            enemy_copy[0] = self.enemy[0] + 1
+            enemy_copy[1] = self.enemy[1]
+            new_enemy_to_player = abs(enemy_copy[0] - self.player[0]) + abs(enemy_copy[1] - self.player[1])
+            enemy_copy.append(new_enemy_to_player)
+            action_print = "move_to({},{})".format(enemy_copy[0], enemy_copy[1])
+            States.append( game(action_print, self.gval+1, self.size, self.current_time+1, self.obstacles_list, self.player, enemy_copy, self) )
+        
+        # Try moving enemy UP
+        if (self.enemy[1] - 1 >= 0):
+            enemy_copy = copy.deepcopy(self.enemy) #make a copy of the enemy and change it's coords and num_steps
+            enemy_copy[0] = self.enemy[0]
+            enemy_copy[1] = self.enemy[1] - 1
+            new_enemy_to_player = abs(enemy_copy[0] - self.player[0]) + abs(enemy_copy[1] - self.player[1])
+            enemy_copy.append(new_enemy_to_player)
+            action_print = "move_to({},{})".format(enemy_copy[0],enemy_copy[1])
+            States.append( game(action_print, self.gval+1, self.size, self.current_time+1, self.obstacles_list, self.player, enemy_copy, self) )
+        
+        # Try moving enemy DOWN
+        if (self.enemy[1] - 1 < self.size):
+            enemy_copy = copy.deepcopy(self.enemy) #make a copy of the enemy and change it's coords and num_steps
+            enemy_copy[0] = self.enemy[0]
+            enemy_copy[1] = self.enemy[1] + 1
+            new_enemy_to_player = abs(enemy_copy[0] - self.player[0]) + abs(enemy_copy[1] - self.player[1])
+            enemy_copy.append(new_enemy_to_player)
+            action_print = "move_to({},{})".format(enemy_copy[0],enemy_copy[1])
+            States.append( game(action_print, self.gval+1, self.size, self.current_time+1, self.obstacles_list, self.player, enemy_copy, self) )
+        
         return States
-        '''Return list of warehouse objects that are the successors of the current object'''
     
 
     def hashable_state(self):
-#IMPLEMENT
-        return (str(self.current_time) + str(self.robot_status) + str(self.open_orders))
         '''Return a data item that can be used as a dictionary key to UNIQUELY represent the state.'''
+    #IMPLEMENT
+        return (str(self.player) + str(self.enemy) + str(self.current_time))
+        
         
     def print_state(self):
         #DO NOT CHANGE THIS FUNCTION---it will be used in auto marking
@@ -105,67 +110,17 @@ class game(StateSpace):
             print("Action= \"{}\", S{}, g-value = {}, (Initial State)".format(self.action, self.index, self.gval))
             
         print("Time = {}".format(self.get_time()))
-        print("Unfulfilled Orders")
-        for o in self.get_orders():
-            print("    {} ==> {}".format(o[0], o[1]))
-        print("Robot Status")
-        for rs in self.get_robot_status():
-            print("    {} is {}".format(rs[0], rs[1]), end="")
-            if rs[1] == 'idle':
-                print(" at location {}".format(rs[2]))
-            elif rs[1] == 'on_delivery':
-                print(" will be at location {} at time {}".format(rs[2], rs[3]))
+        print("Enemy is at location({},{})".format(self.enemy[0], self.enemy[1]))
+        print("Player is at location({},{})".format(self.player[0], self.player[1]))
+        print()
 
-#Data accessor routines.
 
-    def get_robot_status(self):
-#IMPLEMENT
-
-        '''robot_list = []
-        
-        for robot in self.robot_status:
-            tmp = []
-            tmp.append(robot[0])
-            tmp.append(robot[1])
-            tmp.append(robot[2])                #ex ('r2', 'idle', (0,0))
-            if (robot[1] == "on_delivery"): #ex ('r1', 'on_delivery', (20,10), 14)
-                tmp.append(robot[3])
-            robot_list.append(tmp)
-            '''
-        return self.robot_status
-            
-        
-        '''Return list containing status of each robot
-           This list has to be in the format: [rs_1, rs_2, ..., rs_k]
-           with one status list for each robot in the state. 
-           Each robot status item rs_i is itself a list in the format [<name>, <status>, <loc>, <ftime>]
-           Where <name> is the name of the robot (a string)
-                 <status> is either the string "idle" or the string "on_delivery"
-                 <loc> is a location (a pair (x,y)) 
-                       if <status> == "idle" then loc is the robot's current location
-                       if <status> == "on_delivery" then loc is the robot's future location
-                <ftime> 
-                       if <status> == "idle" this item is missing (i.e., the list is of 
-                                      length 3)
-                       if <status> == "on_delivery" then this is a number that is the 
-                                      time that the robot will complete its current delivery
-        '''
-
+    #Data accessor routines.
     def get_time(self):
-#IMPLEMENT
+    #IMPLEMENT
         return self.current_time
         '''Return the current time of this state (a number)'''
-
-    def get_orders(self):
         
-#IMPLEMENT
-        return self.open_orders
-        '''Return list of unfulfilled orders of this state
-           This list is in the format [o1, o2, ..., om]
-           one item for each unfulfilled order. 
-           Each oi is itself a list [<product_name>, <packing_station_name>]
-           where <product_name> is the name of the product to be delivered
-           and  <packing_station_name> is the name of the packing station it is to be delivered to'''
 
 #############################################
 # heuristics                                #
@@ -224,7 +179,6 @@ def heur_min_completion_time(state):
         for station in state.packing_station_list:
             if ([product[0], station[0]] in state.open_orders):
                 station_distances.append(abs(product[1][0] - station[1][0]) + abs(product[1][1] - station[1][1]))
-                #print("product to station distances: ", abs(product[1][0] - station[1][0]) + abs(product[1][1] - station[1][1]))
     if (station_distances != []):
         TIME2 = max(station_distances) 
     return max(TIME1, TIME2)
@@ -232,7 +186,7 @@ def heur_min_completion_time(state):
 def game_goal_fn(state):
 #IMPLEMENT
     '''Have we reached the goal when an enemy is on same loc as player'''
-    if (state.player[1 == state.enemy.loc):
+    if (state.player[0] == state.enemy[0] and state.player[1] == state.enemy[1]):
         return True
     return False
 
