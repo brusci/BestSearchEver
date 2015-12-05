@@ -1,13 +1,6 @@
-#Look for #IMPLEMENT tags in this file. These tags indicate what has
-#to be implemented to complete the warehouse domain.  
-
 '''
 game STATESPACE 
 '''
-#   You may add only standard python imports---i.e., ones that are automatically
-#   available on CDF.
-#   You may not remove any imports.
-#   You may not import or otherwise source any of your own files
 
 from search import *
 from random import randint
@@ -21,10 +14,10 @@ import copy
 class game(StateSpace):
     def __init__(self, action, gval, size, current_time, obstacles_list, player, enemy, checked, parent = None):
         """Initialize a game search state object."""
-        #IMPLEMENT
+        # IMPLEMENT
         
         StateSpace.__init__(self, action, gval, parent)
-        self.size = size #symmetrical size of game board
+        self.size = size # symmetrical size of game board
         self.current_time = current_time
         self.obstacles_list = obstacles_list #list of unnavigable loc
         self.player = copy.deepcopy(player)
@@ -33,14 +26,14 @@ class game(StateSpace):
                                 # -considering methods to reduce time in BFS 
                                 # and A* search, this is one of them
                                 
-        #Each player and enemy itself a list in the format [x, y]
+        # Each player and enemy itself a list in the format [x, y]
         
     def get_obstacles_list(self):
-        #return list of obstacles
+        # return list of obstacles
         return obstacles_list
             
     def find_min_delivery(self):
-        tmp = [] #return min delivery action time
+        tmp = [] # return min delivery action time
         for robot in self.robot_status:
             if (len(robot) > 3):
                 tmp.append(robot[3])
@@ -54,8 +47,8 @@ class game(StateSpace):
         
         # Try moving enemy LEFT
         if (self.enemy[0] - 1 >= 0):
-            enemy_copy = copy.deepcopy(self.enemy) #make a copy of the enemy and
-                                                   #change its coords
+            enemy_copy = copy.deepcopy(self.enemy) # make a copy of the enemy and
+                                                   # change its coords
             enemy_copy[0] = self.enemy[0] - 1
             enemy_copy[1] = self.enemy[1]
             new_enemy_to_player = abs(enemy_copy[0] - self.player[0]) + abs(enemy_copy[1] - self.player[1])
@@ -67,8 +60,8 @@ class game(StateSpace):
         
         # Try moving enemy RIGHT
         if (self.enemy[0] - 1 < self.size):
-            enemy_copy = copy.deepcopy(self.enemy) #make a copy of the enemy and
-                                                   #change its coords
+            enemy_copy = copy.deepcopy(self.enemy) # make a copy of the enemy and
+                                                   # change its coords
             enemy_copy[0] = self.enemy[0] + 1
             enemy_copy[1] = self.enemy[1]
             new_enemy_to_player = abs(enemy_copy[0] - self.player[0]) + abs(enemy_copy[1] - self.player[1])
@@ -80,8 +73,8 @@ class game(StateSpace):
         
         # Try moving enemy UP
         if (self.enemy[1] - 1 >= 0):
-            enemy_copy = copy.deepcopy(self.enemy) #make a copy of the enemy and
-                                                   #change its coords
+            enemy_copy = copy.deepcopy(self.enemy) # make a copy of the enemy and
+                                                   # change its coords
             enemy_copy[0] = self.enemy[0]
             enemy_copy[1] = self.enemy[1] - 1
             new_enemy_to_player = abs(enemy_copy[0] - self.player[0]) + abs(enemy_copy[1] - self.player[1])
@@ -93,8 +86,8 @@ class game(StateSpace):
         
         # Try moving enemy DOWN
         if (self.enemy[1] - 1 < self.size):
-            enemy_copy = copy.deepcopy(self.enemy) #make a copy of the enemy and
-                                                   #change its coords
+            enemy_copy = copy.deepcopy(self.enemy) # make a copy of the enemy and
+                                                   # change its coords
             enemy_copy[0] = self.enemy[0]
             enemy_copy[1] = self.enemy[1] + 1
             new_enemy_to_player = abs(enemy_copy[0] - self.player[0]) + abs(enemy_copy[1] - self.player[1])
@@ -109,7 +102,7 @@ class game(StateSpace):
 
     def hashable_state(self):
         '''Return a data item that can be used as a dictionary key to UNIQUELY represent the state.'''
-    #IMPLEMENT
+    # IMPLEMENT
         return (str(self.player) + str(self.enemy) + str(self.current_time))
         
     def print_state(self):
@@ -123,9 +116,9 @@ class game(StateSpace):
         print("Player is at location({},{})".format(self.player[0], self.player[1]))
         print()
 
-    #Data accessor routines.
+    # Data accessor routines.
     def get_time(self):
-    #IMPLEMENT
+    # IMPLEMENT
     '''Return the current time of this state (a number)'''
         return self.current_time
         
@@ -141,18 +134,18 @@ def heur_zero(state):
 def heur_min_completion_time(state):
 #IMPLEMENT
     '''game heuristic'''
-    #We want an admissible heuristic. Since the aim is to reach the 
-    #player in as short as a time as possible. We cannot finish until
-    #a distance between the enemy and the player has been reached. So the
-    #earliest we could finish is:
+    # We want an admissible heuristic. Since the aim is to reach the 
+    # player in as short as a time as possible. We cannot finish until
+    # a distance between the enemy and the player has been reached. So the
+    # earliest we could finish is:
     #   abs(enemy_x - player_x) + abs(enemy_y - player_y)
-    #We return this value as a heuristic
+    # We return this value as a heuristic
     
     return abs(state.enemy[0] - state.player[0]) + abs(state.enemy[1] - state.player[1])
 
 def game_goal_fn(state):
     '''Have we reached the goal when an enemy is on same loc as player'''
-    #IMPLEMENT
+    # IMPLEMENT
     if (state.player[0] == state.enemy[0] and state.player[1] == state.enemy[1]):
         return True
     return False
@@ -180,7 +173,7 @@ def make_init_state(size, current_time, obstacles_list, player, enemy):
           The enemy's location, where 
             x is the x-coordinate of the obstacle, and y is the y-coordinate.
           '''
-    #IMPLEMENT
+    # IMPLEMENT
 
     return game("START", 0, size, current_time, obstacles_list, player, enemy, [])
 
@@ -189,32 +182,30 @@ def make_init_state(size, current_time, obstacles_list, player, enemy):
 #   Test your implementation                           #
 ########################################################
 
-def make_rand_init_state(nprods, npacks, norders, nrobots):
+def make_rand_init_state(nsize, nobstacles):
     '''Generate a random initial state containing 
-       nprods = number of products
-       npacks = number of packing stations
+       nsize = size of the board - one length
+       nobstacles = number of obstacles
        norders = number of unfulfilled orders
        nrobots = number of robots in domain'''
-    prods = []
-    for i in range(nprods):
+    size = randint(0,50)
+    for i in range(size):
         ii = int(i)
-        prods.append(["product{}".format(ii), (randint(0,50), randint(0,50))])
-    packs = []
-    for i in range(npacks):
+        prods.append(["product{}".format(ii), (, randint(0,50))])
+    obstacles_list = []
+    for i in range(nobstacles):
         ii = int(i)
-        packs.append(["packing{}".format(ii), (randint(0,50), randint(0,50))])
-    orders = []
-    for i in range(norders):
-        orders.append([prods[randint(0,nprods-1)][0], packs[randint(0,npacks-1)][0]])
-    robotStatus = []
-    for i in range(nrobots):
-        ii = int(i)
-        robotStatus.append(["robot{}".format(ii), "idle", (randint(0,50), randint(0,50))])
-    return make_init_state(prods, packs, 0, orders, robotStatus)
+        obstacles_list.append([(randint(0,size), randint(0,size))])
+        
+    player = [randint(0,size),randint(0,size)]
+    enemy = [randint(0,size),randint(0,size)]
+    while (enemy[0] == player[0] and enemy[1] == player[1]):
+        enemy = [randint(0,size),randint(0,size)]
+    return make_init_state(size, 0, obstacles_list, player, enemy):
 
 
-def test(nprods, npacks, norders, nrobots):
-    s0 = make_rand_init_state(nprods, npacks, norders, nrobots)
+def test(nsize, nobstacles):
+    s0 = make_rand_init_state(nsize, nobstacles)
     se = SearchEngine('astar', 'full')
     se.trace_on(2)
-    final = se.search(s0, warehouse_goal_fn, heur_min_completion_time)
+    final = se.search(s0, game_goal_fn, heur_min_completion_time)
