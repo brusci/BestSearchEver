@@ -119,7 +119,7 @@ class game(StateSpace):
     # Data accessor routines.
     def get_time(self):
     # IMPLEMENT
-    '''Return the current time of this state (a number)'''
+        '''Return the current time of this state (a number)'''
         return self.current_time
         
 
@@ -185,13 +185,9 @@ def make_init_state(size, current_time, obstacles_list, player, enemy):
 def make_rand_init_state(nsize, nobstacles):
     '''Generate a random initial state containing 
        nsize = size of the board - one length
-       nobstacles = number of obstacles
-       norders = number of unfulfilled orders
-       nrobots = number of robots in domain'''
+       nobstacles = number of obstacles'''
     size = randint(0,50)
-    for i in range(size):
-        ii = int(i)
-        prods.append(["product{}".format(ii), (, randint(0,50))])
+    
     obstacles_list = []
     for i in range(nobstacles):
         ii = int(i)
@@ -201,7 +197,7 @@ def make_rand_init_state(nsize, nobstacles):
     enemy = [randint(0,size),randint(0,size)]
     while (enemy[0] == player[0] and enemy[1] == player[1]):
         enemy = [randint(0,size),randint(0,size)]
-    return make_init_state(size, 0, obstacles_list, player, enemy):
+    return make_init_state(size, 0, obstacles_list, player, enemy)
 
 
 def test(nsize, nobstacles):
