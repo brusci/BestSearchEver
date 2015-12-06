@@ -12,22 +12,16 @@ import copy
 ##################################################
 
 class game(StateSpace):
-    def __init__(self, action, gval, size, current_time, obstacles_list, player, enemy, checked, parent = None):
+    def __init__(self, action, gval, size, current_time, obstacles_list, player, enemy, parent = None):
         """Initialize a game search state object."""
         # IMPLEMENT
-        
         StateSpace.__init__(self, action, gval, parent)
         self.size = size # symmetrical size of game board
         self.current_time = current_time
         self.obstacles_list = obstacles_list #list of unnavigable loc
         self.player = copy.deepcopy(player)
-        self.enemy = copy.deepcopy(enemy)
-        self.checked = checked; # taking advantage of pass by reference here
-                                # -considering methods to reduce time in BFS 
-                                # and A* search, this is one of them
-        self.space_checking = False
-        self.checked = checked; # taking advantage of pass by reference here
-        
+        self.enemy = enemy
+                                
         # Each player and enemy itself a list in the format [x, y]
         
     def get_obstacles_list(self):
@@ -42,22 +36,10 @@ class game(StateSpace):
         if (not tmp):
             return 0
         return min(tmp)   
-        
-    def space_checking_on(self):
-        self.space_checking = True
-        
-    def space_checking_off(self):
-        self.space_checking = False
 
     def successors(self):
         #IMPLEMENT    
         States = list()
-        
-        if [self.enemy[0], self.enemy[1]] in self.checked:
-#             print("Location ({}, {}) was already checked".format(self.action, self.index, self.gval))
-            return States
-        
-        self.checked.append([self.enemy[0], self.enemy[1]])
         
         # Try moving enemy LEFT
         if (self.enemy[0] - 1 >= 0):
@@ -65,17 +47,25 @@ class game(StateSpace):
                                                    # change its coords
             enemy_copy[0] = self.enemy[0] - 1
             enemy_copy[1] = self.enemy[1]
-            action_print = "move_left_from({},{})_to({},{})".format(self.enemy[0], self.enemy[1], enemy_copy[0], enemy_copy[1])
-            States.append( game(action_print, self.gval+1, self.size, self.current_time+1, self.obstacles_list, self.player, enemy_copy, self.checked, self) )
+            new_enemy_to_player = abs(enemy_copy[0] - self.player[0]) + abs(enemy_copy[1] - self.player[1])
+            enemy_copy.append(new_enemy_to_player)
+            old_enemy_to_player = abs(self.enemy[0] - self.player[0]) + abs(self.enemy[1] - self.player[1])
+            
+            action_print = "move_to({},{})".format(enemy_copy[0], enemy_copy[1])
+            States.append( game(action_print, self.gval+1, self.size, self.current_time+1, self.obstacles_list, self.player, enemy_copy, self) )
         
         # Try moving enemy RIGHT
-        if (self.enemy[0] + 1 < self.size):
+        if (self.enemy[0] - 1 < self.size):
             enemy_copy = copy.deepcopy(self.enemy) # make a copy of the enemy and
                                                    # change its coords
             enemy_copy[0] = self.enemy[0] + 1
             enemy_copy[1] = self.enemy[1]
-            action_print = "move_right_from({},{})_to({},{})".format(self.enemy[0], self.enemy[1], enemy_copy[0], enemy_copy[1])
-            States.append( game(action_print, self.gval+1, self.size, self.current_time+1, self.obstacles_list, self.player, enemy_copy, self.checked, self) )
+            new_enemy_to_player = abs(enemy_copy[0] - self.player[0]) + abs(enemy_copy[1] - self.player[1])
+            enemy_copy.append(new_enemy_to_player)
+            old_enemy_to_player = abs(self.enemy[0] - self.player[0]) + abs(self.enemy[1] - self.player[1])
+            
+            action_print = "move_to({},{})".format(enemy_copy[0], enemy_copy[1])
+            States.append( game(action_print, self.gval+1, self.size, self.current_time+1, self.obstacles_list, self.player, enemy_copy, self) )
         
         # Try moving enemy UP
         if (self.enemy[1] - 1 >= 0):
@@ -83,22 +73,28 @@ class game(StateSpace):
                                                    # change its coords
             enemy_copy[0] = self.enemy[0]
             enemy_copy[1] = self.enemy[1] - 1
-            action_print = "move_up_from({},{})_to({},{})".format(self.enemy[0], self.enemy[1], enemy_copy[0], enemy_copy[1])
-            States.append( game(action_print, self.gval+1, self.size, self.current_time+1, self.obstacles_list, self.player, enemy_copy, self.checked, self) )
+            new_enemy_to_player = abs(enemy_copy[0] - self.player[0]) + abs(enemy_copy[1] - self.player[1])
+            enemy_copy.append(new_enemy_to_player)
+            old_enemy_to_player = abs(self.enemy[0] - self.player[0]) + abs(self.enemy[1] - self.player[1])
+            
+            action_print = "move_to({},{})".format(enemy_copy[0],enemy_copy[1])
+            States.append( game(action_print, self.gval+1, self.size, self.current_time+1, self.obstacles_list, self.player, enemy_copy, self) )
         
         # Try moving enemy DOWN
-        if (self.enemy[1] + 1 < self.size):
+        if (self.enemy[1] - 1 < self.size):
             enemy_copy = copy.deepcopy(self.enemy) # make a copy of the enemy and
                                                    # change its coords
             enemy_copy[0] = self.enemy[0]
             enemy_copy[1] = self.enemy[1] + 1
+            new_enemy_to_player = abs(enemy_copy[0] - self.player[0]) + abs(enemy_copy[1] - self.player[1])
+            enemy_copy.append(new_enemy_to_player)
+            old_enemy_to_player = abs(self.enemy[0] - self.player[0]) + abs(self.enemy[1] - self.player[1])
             
-            action_print = "move_down_from({},{})_to({},{})".format(self.enemy[0], self.enemy[1], enemy_copy[0], enemy_copy[1])
-            States.append( game(action_print, self.gval+1, self.size, self.current_time+1, self.obstacles_list, self.player, enemy_copy, self.checked, self) )
+            action_print = "move_to({},{})".format(enemy_copy[0],enemy_copy[1])
+            States.append( game(action_print, self.gval+1, self.size, self.current_time+1, self.obstacles_list, self.player, enemy_copy, self) )
         
         return States
     
-
     def hashable_state(self):
         '''Return a data item that can be used as a dictionary key to UNIQUELY represent the state.'''
     # IMPLEMENT
@@ -112,8 +108,8 @@ class game(StateSpace):
             print("Action= \"{}\", S{}, g-value = {}, (Initial State)".format(self.action, self.index, self.gval))
             
         print("Time = {}".format(self.get_time()))
-        print("Player is at location({},{})".format(self.player[0], self.player[1]))
         print("Enemy is at location({},{})".format(self.enemy[0], self.enemy[1]))
+        print("Player is at location({},{})".format(self.player[0], self.player[1]))
         print()
 
     # Data accessor routines.
