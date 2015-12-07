@@ -1,4 +1,6 @@
 import tkinter as tk
+from random import randint
+
 class GameBoard(tk.Frame):
     def __init__(self, parent, rows=8, columns=8, size=32, color1="white", color2="white"):
         '''size is the size of a square, in pixels'''
@@ -14,6 +16,7 @@ class GameBoard(tk.Frame):
         canvas_height = rows * size
 
         tk.Frame.__init__(self, parent)
+        
         self.canvas = tk.Canvas(self, borderwidth=0, highlightthickness=0,
                                 width=canvas_width, height=canvas_height, background="bisque")
         self.canvas.pack(side="top", fill="both", expand=True, padx=2, pady=2)
@@ -29,7 +32,7 @@ class GameBoard(tk.Frame):
         self.canvas.bind_all("<Up>", self.UpHandler)
         self.canvas.bind_all("<Down>", self.DownHandler)
         self.canvas.bind_all("<F1>", self.QuitHandler)
-
+        
     def addpiece(self, name, image, row=0, column=0):
         '''Add a piece to the playing board'''
         itemID = self.canvas.create_image(0,0, image=image, tags=(name, "piece"), anchor="c")
@@ -52,6 +55,16 @@ class GameBoard(tk.Frame):
         self.size = min(xsize, ysize)
         self.canvas.delete("square")
         color = self.color2
+        player_tuple = self.pieces.get("player2") #get player tuple from dict in form (row, col, itemID)
+        row_player = player_tuple[0]
+        col_player = player_tuple[1]
+
+        player_tuple5 = self.pieces.get("player1") #get player tuple from dict in form (row, col, itemID)
+        row_player5 = player_tuple[0]
+        col_player5 = player_tuple[1]
+
+        
+        
         for row in range(self.rows):
             color = self.color1 if color == self.color2 else self.color2
             for col in range(self.columns):
@@ -59,10 +72,22 @@ class GameBoard(tk.Frame):
                 y1 = (row * self.size)
                 x2 = x1 + self.size
                 y2 = y1 + self.size
-                self.canvas.create_rectangle(x1, y1, x2, y2, outline="black", fill=color, tags="square")
+                self.canvas.create_rectangle(x1, y1, x2, y2, outline="black", fill=color, tags="square", dash=(5,1))
+                if ((row,col) == (0,1) or (row,col) == (0,2)):
+                    self.canvas.create_rectangle(x1, y1, x2, y2, outline="black", fill="pink", tags="square", dash=(5,1)) 
+                    self.canvas.create_rectangle(x1, y1, x2, y2, outline="black", fill="pink", tags="square", dash=(5,1))
+
+                if ((abs(row - row_player) == 0 and  abs(col - col_player) == 1)
+                    or (abs(row - row_player) == 1 and  abs(col - col_player) == 0)):
+                    if ((row,col) == (1,2)):
+                        self.canvas.create_rectangle(x1, y1, x2, y2, outline="black", fill="pink", tags="square")
+                    else:
+                        color5 = '#00ffff'
+                        self.canvas.create_rectangle(x1, y1, x2, y2, outline="black", fill="blue", tags="square", stipple='gray25')
                 color = self.color1 if color == self.color2 else self.color2
         for name in self.pieces:
-            self.placepiece(name, self.pieces[name][0], self.pieces[name][1], self.pieces[name][2])
+            if (name == "player2"):
+                self.placepiece(name, self.pieces[name][0], self.pieces[name][1], self.pieces[name][2])
         self.canvas.tag_raise("piece")
         self.canvas.tag_lower("square")
 
@@ -78,88 +103,109 @@ class GameBoard(tk.Frame):
             del self.pieces[name]
             return
     def CheckMove(self, pos):
-        for name in self.pieces:
-            if (self.pieces[name][1:] == pos):
-                print("you hit me")
-        if (pos % 7 == 0):
+
+        if (pos > 7 or pos < 0):
             print("pos: ", pos, "pos % 7", pos % 7, "you hit me")
             return False
         else:
             return True
+    def CheckEat(self):
+
+        if (self.pieces.get("player1")[0:2] == self.pieces.get("player2")[0:2]):
+            player_tuple = self.pieces.get("player2") #get player tuple from dict in form (row, col, itemID)
+            print("Cobra ate you!\nTry again!")
+            self.placepiece("player1", randint(0, self.rows-1), randint(0, self.columns-1), self.pieces.get("player1")[2])
+            self.placepiece("player2", randint(0, self.rows-1), randint(0, self.columns-1), self.pieces.get("player2")[2])
+            
+
+                    
+            player_tuple = self.pieces.get("player2") #get player tuple from dict in form (row, col, itemID)
+            row_player = player_tuple[0]
+            col_player = player_tuple[1]
+            
+            for row in range(self.rows):
+                for col in range(self.columns):
+                    x1 = (col * self.size)
+                    y1 = (row * self.size)
+                    x2 = x1 + self.size
+                    y2 = y1 + self.size
+                    if ((abs(row - row_player) == 0 and  abs(col - col_player) == 1)
+                        or (abs(row - row_player) == 1 and  abs(col - col_player) == 0)):
+                            color5 = '#00ffff'
+                            self.canvas.create_rectangle(x1, y1, x2, y2, outline="black", fill=color5, tags="square", stipple='gray25')
+
+                    
         
     def LeftHandler(self, event):
-        for name in self.pieces:
-              if (name == 'player1'):
-                  if (self.pieces[name][1] == 7 or self.CheckMove(self.pieces[name][1])):
-                      self.pieces[name] = (self.pieces[name][0], self.pieces[name][1] - 1, self.pieces[name][2])
-                      new_row = self.pieces[name][0]
-                      self.placepiece(name, new_row, self.pieces[name][1], self.pieces[name][2])
-                      print("(x,y):", self.pieces[name][1], self.pieces[name][2])
+                
+        player_tuple = self.pieces.get("player1") #get player tuple from dict in form (row, col, itemID)
+        row = player_tuple[0]
+        col = player_tuple[1] - 1
+        
+        if (self.CheckMove(col)):
+            self.placepiece("player1", row, col, player_tuple[2])
+            self.CheckEat()
+            print(self.pieces.get("player1"))
         #placepiece(self, name, row, column, itemID)
         
     def RightHandler(self, event):
-        for name in self.pieces:
-              if (name == 'player1'):
-                  if (self.pieces[name][1] == 0 or self.CheckMove(self.pieces[name][1])):
-                      self.pieces[name] = (self.pieces[name][0], self.pieces[name][1]+ 1, self.pieces[name][2])
-                      new_row = self.pieces[name][0]
-                      self.placepiece(name, new_row, self.pieces[name][1], self.pieces[name][2])
-                      print("(x,y):", self.pieces[name][1], self.pieces[name][2])
-        #placepiece(self, name, row, column, itemID)
+        player_tuple = self.pieces.get("player1")
+        row = player_tuple[0]
+        col = player_tuple[1] + 1
+        
+        if (self.CheckMove(col)):
+            self.placepiece("player1", row, col, player_tuple[2])
+            self.CheckEat()
+            print(self.pieces.get("player1"))
         
     def UpHandler(self, event):
-        print("pressed{}".format("Up"))
-        for name in self.pieces:
-              if (name == 'player1'):
-                  if (self.pieces[name][1] == 7 or self.CheckMove(self.pieces[name][0])):
-                      self.pieces[name] = (self.pieces[name][0] - 1, self.pieces[name][1], self.pieces[name][2])
-                      new_row = self.pieces[name][0]
-                      self.placepiece(name, new_row, self.pieces[name][0], self.pieces[name][1])
+        player_tuple = self.pieces.get("player1")
+        row = player_tuple[0] - 1
+        col = player_tuple[1]
         
+        if (self.CheckMove(row)):
+            self.placepiece("player1", row, col, player_tuple[2])
+            self.CheckEat()
+            print(self.pieces.get("player1"))
+            
     def DownHandler(self, event):
-        print("pressed{}".format("Down"))
-        for name in self.pieces:
-              if (name == 'player1'):
-                  if (self.pieces[name][1] == 0 or self.CheckMove(self.pieces[name][0])):
-                      self.pieces[name] = (self.pieces[name][0] - 1, self.pieces[name][1], self.pieces[name][2])
-                      new_row = self.pieces[name][0]
-                      self.placepiece(name, new_row, self.pieces[name][0], self.pieces[name][1])
-
+        player_tuple = self.pieces.get("player1")
+        row = player_tuple[0] + 1
+        col = player_tuple[1]
+        
+        if (self.CheckMove(row)):
+            self.placepiece("player1", row, col, player_tuple[2])
+            self.CheckEat()
+            print(self.pieces.get("player1"))
+            
     def QuitHandler(self, event):
         print("pressed{}".format("f1"))
         quit()
 
-# image comes from the silk icon set which is under a Creative Commons
-# license. For more information see http://www.famfamfam.com/lab/icons/silk/
-imagedata = '''
-    R0lGODlhEAAQAOeSAKx7Fqx8F61/G62CILCJKriIHM+HALKNMNCIANKKANOMALuRK7WOVLWPV9eR
-    ANiSANuXAN2ZAN6aAN+bAOCcAOKeANCjKOShANKnK+imAOyrAN6qSNaxPfCwAOKyJOKyJvKyANW0
-    R/S1APW2APW3APa4APe5APm7APm8APq8AO28Ke29LO2/LO2/L+7BM+7BNO6+Re7CMu7BOe7DNPHA
-    P+/FOO/FO+jGS+/FQO/GO/DHPOjBdfDIPPDJQPDISPDKQPDKRPDIUPHLQ/HLRerMV/HMR/LNSOvH
-    fvLOS/rNP/LPTvLOVe/LdfPRUfPRU/PSU/LPaPPTVPPUVfTUVvLPe/LScPTWWfTXW/TXXPTXX/XY
-    Xu/SkvXZYPfVdfXaY/TYcfXaZPXaZvbWfvTYe/XbbvHWl/bdaPbeavvadffea/bebvffbfbdfPvb
-    e/fgb/Pam/fgcvfgePTbnfbcl/bfivfjdvfjePbemfjelPXeoPjkePbfmvffnvbfofjlgffjkvfh
-    nvjio/nnhvfjovjmlvzlmvrmpvrrmfzpp/zqq/vqr/zssvvvp/vvqfvvuPvvuvvwvfzzwP//////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    /////////////////////////////////////////////////////yH+FUNyZWF0ZWQgd2l0aCBU
-    aGUgR0lNUAAh+QQBCgD/ACwAAAAAEAAQAAAIzAD/CRxIsKDBfydMlBhxcGAKNIkgPTLUpcPBJIUa
-    +VEThswfPDQKokB0yE4aMFiiOPnCJ8PAE20Y6VnTQMsUBkWAjKFyQaCJRYLcmOFipYmRHzV89Kkg
-    kESkOme8XHmCREiOGC/2TBAowhGcAyGkKBnCwwKAFnciCAShKA4RAhyK9MAQwIMMOQ8EdhBDKMuN
-    BQMEFPigAsoRBQM1BGLjRIiOGSxWBCmToCCMOXSW2HCBo8qWDQcvMMkzCNCbHQga/qMgAYIDBQZU
-    yxYYEAA7
-'''
+# Image comes from the Snake Enemy Kit set which is under a Creative Commons license.
+# CC0 1.0 Universal (CC0 1.0)
+# For more information see http://opengameart.org/content/snake-enemy-kit-32x32
+# Author: kungfu4000
+# Title: Snake Enemy Kit 32x32
+  
 
-
-
-if __name__ == "__main__":
+def start_game():
+    player_norm = '''player_norm.png'''
+    player_up = '''player_up.png'''
+    #opponent_girl ='''Girl_Snake_Pixel.png'''
+    opponent = '''Cobra_Pixel.png'''
+    
     root = tk.Tk()
     board = GameBoard(root)
     board.pack(side="top", fill="both", expand="true", padx=4, pady=4)
-    player1 = tk.PhotoImage(data=imagedata)
+    player1 = tk.PhotoImage(file=player_norm) #player image
+    player2 = tk.PhotoImage(file=opponent) #opponent image
+    #player3 = tk.PhotoImage(file=opponent_girl) #opponent girl image
+    player_up = tk.PhotoImage(file=player_up) #player up image
     board.addpiece("player1", player1, 0,0)
-    board.addpiece("player2", player1, 2,2)
+    board.addpiece("player2", player2, 2,2)
+    #board.addpiece("player3", player3, 1,2)
     root.mainloop()
+
+if __name__ == "__main__":
+    start_game()
