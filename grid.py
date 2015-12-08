@@ -1,5 +1,6 @@
 import tkinter as tk
 from random import randint
+from game import *
 
 class GameBoard(tk.Frame):
     def __init__(self, parent, rows=8, columns=8, size=32, color1="white", color2="white"):
@@ -11,6 +12,8 @@ class GameBoard(tk.Frame):
         self.color1 = color1
         self.color2 = color2
         self.pieces = {}
+        
+        self.se = SearchEngine('astar', 'full')
 
         canvas_width = columns * size
         canvas_height = rows * size
@@ -146,6 +149,7 @@ class GameBoard(tk.Frame):
             self.placepiece("player1", row, col, player_tuple[2])
             self.CheckEat()
             print(self.pieces.get("player1"))
+            self.evaluatePath()
         #placepiece(self, name, row, column, itemID)
         
     def RightHandler(self, event):
@@ -157,6 +161,7 @@ class GameBoard(tk.Frame):
             self.placepiece("player1", row, col, player_tuple[2])
             self.CheckEat()
             print(self.pieces.get("player1"))
+            self.evaluatePath()
         
     def UpHandler(self, event):
         player_tuple = self.pieces.get("player1")
@@ -167,6 +172,7 @@ class GameBoard(tk.Frame):
             self.placepiece("player1", row, col, player_tuple[2])
             self.CheckEat()
             print(self.pieces.get("player1"))
+            self.evaluatePath()
             
     def DownHandler(self, event):
         player_tuple = self.pieces.get("player1")
@@ -177,10 +183,23 @@ class GameBoard(tk.Frame):
             self.placepiece("player1", row, col, player_tuple[2])
             self.CheckEat()
             print(self.pieces.get("player1"))
+            self.evaluatePath()
             
     def QuitHandler(self, event):
         print("pressed{}".format("f1"))
         quit()
+        
+    def evaluatePath(self):
+        player_row = self.pieces.get("player1")[0]
+        player_col = self.pieces.get("player1")[1]
+        enemy_row = self.pieces.get("player2")[0]
+        enemy_col = self.pieces.get("player2")[1]
+        s = make_init_state(self.size, 0, [], [player_row, player_col], [enemy_row, enemy_col])
+        goal_state = self.se.search(s, game_goal_fn, heur_min_completion_time)
+        path = goal_state.get_path_info()
+        print(path)
+        
+        
 
 # Image comes from the Snake Enemy Kit set which is under a Creative Commons license.
 # CC0 1.0 Universal (CC0 1.0)
@@ -190,15 +209,19 @@ class GameBoard(tk.Frame):
   
 
 def start_game():
-    player_norm = '''player_norm.png'''
-    player_up = '''player_up.png'''
+#     player_norm = '''player_norm.png'''
+    player_norm = 'player_norm.gif'
+#     player_up = '''player_up.png'''
+    player_up = '''player_up.gif'''
     #opponent_girl ='''Girl_Snake_Pixel.png'''
-    opponent = '''Cobra_Pixel.png'''
+#     opponent = '''Cobra_Pixel.png'''
+    opponent = '''Cobra_Pixel.gif'''
     
     root = tk.Tk()
     board = GameBoard(root)
     board.pack(side="top", fill="both", expand="true", padx=4, pady=4)
     player1 = tk.PhotoImage(file=player_norm) #player image
+#     player1 = tk.PhotoImage(Image.open(player_norm)) #player image
     player2 = tk.PhotoImage(file=opponent) #opponent image
     #player3 = tk.PhotoImage(file=opponent_girl) #opponent girl image
     player_up = tk.PhotoImage(file=player_up) #player up image

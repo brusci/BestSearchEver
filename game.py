@@ -22,20 +22,11 @@ class game(StateSpace):
         self.player = copy.deepcopy(player)
         self.enemy = enemy
                                 
-        # Each player and enemy itself a list in the format [x, y]
-        
+        # Each player and enemy itself a list in the format [x, y]    
+    
     def get_obstacles_list(self):
         # return list of obstacles
         return obstacles_list
-            
-    def find_min_delivery(self):
-        tmp = [] # return min delivery action time
-        for robot in self.robot_status:
-            if (len(robot) > 3):
-                tmp.append(robot[3])
-        if (not tmp):
-            return 0
-        return min(tmp)   
 
     def successors(self):
         #IMPLEMENT    
@@ -48,8 +39,6 @@ class game(StateSpace):
             enemy_copy[0] = self.enemy[0] - 1
             enemy_copy[1] = self.enemy[1]
             new_enemy_to_player = abs(enemy_copy[0] - self.player[0]) + abs(enemy_copy[1] - self.player[1])
-            enemy_copy.append(new_enemy_to_player)
-            old_enemy_to_player = abs(self.enemy[0] - self.player[0]) + abs(self.enemy[1] - self.player[1])
             
             action_print = "move_to({},{})".format(enemy_copy[0], enemy_copy[1])
             States.append( game(action_print, self.gval+1, self.size, self.current_time+1, self.obstacles_list, self.player, enemy_copy, self) )
@@ -61,8 +50,6 @@ class game(StateSpace):
             enemy_copy[0] = self.enemy[0] + 1
             enemy_copy[1] = self.enemy[1]
             new_enemy_to_player = abs(enemy_copy[0] - self.player[0]) + abs(enemy_copy[1] - self.player[1])
-            enemy_copy.append(new_enemy_to_player)
-            old_enemy_to_player = abs(self.enemy[0] - self.player[0]) + abs(self.enemy[1] - self.player[1])
             
             action_print = "move_to({},{})".format(enemy_copy[0], enemy_copy[1])
             States.append( game(action_print, self.gval+1, self.size, self.current_time+1, self.obstacles_list, self.player, enemy_copy, self) )
@@ -74,21 +61,17 @@ class game(StateSpace):
             enemy_copy[0] = self.enemy[0]
             enemy_copy[1] = self.enemy[1] - 1
             new_enemy_to_player = abs(enemy_copy[0] - self.player[0]) + abs(enemy_copy[1] - self.player[1])
-            enemy_copy.append(new_enemy_to_player)
-            old_enemy_to_player = abs(self.enemy[0] - self.player[0]) + abs(self.enemy[1] - self.player[1])
             
             action_print = "move_to({},{})".format(enemy_copy[0],enemy_copy[1])
             States.append( game(action_print, self.gval+1, self.size, self.current_time+1, self.obstacles_list, self.player, enemy_copy, self) )
         
         # Try moving enemy DOWN
-        if (self.enemy[1] - 1 < self.size):
+        if (self.enemy[1] + 1 < self.size):
             enemy_copy = copy.deepcopy(self.enemy) # make a copy of the enemy and
                                                    # change its coords
             enemy_copy[0] = self.enemy[0]
             enemy_copy[1] = self.enemy[1] + 1
             new_enemy_to_player = abs(enemy_copy[0] - self.player[0]) + abs(enemy_copy[1] - self.player[1])
-            enemy_copy.append(new_enemy_to_player)
-            old_enemy_to_player = abs(self.enemy[0] - self.player[0]) + abs(self.enemy[1] - self.player[1])
             
             action_print = "move_to({},{})".format(enemy_copy[0],enemy_copy[1])
             States.append( game(action_print, self.gval+1, self.size, self.current_time+1, self.obstacles_list, self.player, enemy_copy, self) )
@@ -112,6 +95,10 @@ class game(StateSpace):
         print("Player is at location({},{})".format(self.player[0], self.player[1]))
         print()
 
+    def get_info(self): 
+        return self.enemy
+        
+              
     # Data accessor routines.
     def get_time(self):
     # IMPLEMENT
