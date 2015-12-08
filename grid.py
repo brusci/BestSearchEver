@@ -1,6 +1,7 @@
 import tkinter as tk
 from random import randint
-from game import *
+import game
+import game_sample_run
 
 class GameBoard(tk.Frame):
     def __init__(self, parent, rows=8, columns=8, size=32, color1="white", color2="white"):
@@ -14,6 +15,7 @@ class GameBoard(tk.Frame):
         self.pieces = {}
         
         self.se = SearchEngine('astar', 'full')
+        self.ideal_moves = []
 
         canvas_width = columns * size
         canvas_height = rows * size
@@ -39,8 +41,8 @@ class GameBoard(tk.Frame):
     def addpiece(self, name, image, row=0, column=0):
         '''Add a piece to the playing board'''
         itemID = self.canvas.create_image(0,0, image=image, tags=(name, "piece"), anchor="c")
-        print(name)
-        print(self.pieces)
+        #print(name)
+        #print(self.pieces)
         self.placepiece(name, row, column, itemID)
         
 
@@ -76,17 +78,12 @@ class GameBoard(tk.Frame):
                 x2 = x1 + self.size
                 y2 = y1 + self.size
                 self.canvas.create_rectangle(x1, y1, x2, y2, outline="black", fill=color, tags="square", dash=(5,1))
-                if ((row,col) == (0,1) or (row,col) == (0,2)):
-                    self.canvas.create_rectangle(x1, y1, x2, y2, outline="black", fill="pink", tags="square", dash=(5,1)) 
-                    self.canvas.create_rectangle(x1, y1, x2, y2, outline="black", fill="pink", tags="square", dash=(5,1))
+
 
                 if ((abs(row - row_player) == 0 and  abs(col - col_player) == 1)
                     or (abs(row - row_player) == 1 and  abs(col - col_player) == 0)):
-                    if ((row,col) == (1,2)):
-                        self.canvas.create_rectangle(x1, y1, x2, y2, outline="black", fill="pink", tags="square")
-                    else:
                         color5 = '#00ffff'
-                        self.canvas.create_rectangle(x1, y1, x2, y2, outline="black", fill="blue", tags="square", stipple='gray25')
+                        #self.canvas.create_rectangle(x1, y1, x2, y2, outline="black", fill="blue", tags="square", stipple='gray25')
                 color = self.color1 if color == self.color2 else self.color2
         for name in self.pieces:
             if (name == "player2"):
@@ -125,7 +122,6 @@ class GameBoard(tk.Frame):
             player_tuple = self.pieces.get("player2") #get player tuple from dict in form (row, col, itemID)
             row_player = player_tuple[0]
             col_player = player_tuple[1]
-            
             for row in range(self.rows):
                 for col in range(self.columns):
                     x1 = (col * self.size)
@@ -135,7 +131,7 @@ class GameBoard(tk.Frame):
                     if ((abs(row - row_player) == 0 and  abs(col - col_player) == 1)
                         or (abs(row - row_player) == 1 and  abs(col - col_player) == 0)):
                             color5 = '#00ffff'
-                            self.canvas.create_rectangle(x1, y1, x2, y2, outline="black", fill=color5, tags="square", stipple='gray25')
+                            #self.canvas.create_rectangle(x1, y1, x2, y2, outline="black", fill="blue", tags="square", stipple='gray25')
 
                     
         
@@ -206,7 +202,7 @@ class GameBoard(tk.Frame):
 # For more information see http://opengameart.org/content/snake-enemy-kit-32x32
 # Author: kungfu4000
 # Title: Snake Enemy Kit 32x32
-  
+
 
 def start_game():
 #     player_norm = '''player_norm.png'''
@@ -216,10 +212,16 @@ def start_game():
     #opponent_girl ='''Girl_Snake_Pixel.png'''
 #     opponent = '''Cobra_Pixel.png'''
     opponent = '''Cobra_Pixel.gif'''
-    
     root = tk.Tk()
     board = GameBoard(root)
     board.pack(side="top", fill="both", expand="true", padx=4, pady=4)
+    difficulty = 3000
+    
+#     player_norm = '''player_norm.png'''
+#     player_up = '''player_up.png'''
+    #opponent_girl ='''Girl_Snake_Pixel.png'''
+#     opponent = '''Cobra_Pixel.png''' #detail_snake.png is more detailed but weak
+
     player1 = tk.PhotoImage(file=player_norm) #player image
 #     player1 = tk.PhotoImage(Image.open(player_norm)) #player image
     player2 = tk.PhotoImage(file=opponent) #opponent image
@@ -228,7 +230,84 @@ def start_game():
     board.addpiece("player1", player1, 0,0)
     board.addpiece("player2", player2, 2,2)
     #board.addpiece("player3", player3, 1,2)
+    difficulty = get_difficulty() #get input string for difficulty
+    root.after(0, opponent_move()) #move opponent AI
     root.mainloop()
+    
+def get_difficulty():
+        name = input("Easy, medium, hard?")
+        lower_name = name.lower()
+        #print("lowered name is:", lower_name)
+        
+        if (lower_name == 'easy'):
+            return 2000
+        elif (lower_name == 'medium'):
+            return 1500
+        else:#we are on hard
+            return 1000
+            
+def search_move():
+    #function only implements an ad-hoc A*Search with
+    #euclidean heuristics for h(x)
+    open_list = []
+    player_tuple = board.pieces.get("player1") #get player tuple from dict in form (row, col, itemID)
+    row_player = player_tuple[0]
+    col_player = player_tuple[1]
+    player_tuple2 = board.pieces.get("player2")
+    row_player2 = player_tuple2[0]
+    col_player2 = player_tuple2[1]
+    
+    for i in range(1,2):
+        for j in range(1,2):
+            
+            row = player_tuple2[0] + i
+            col = player_tuple2[1]
+            open_list.append((row,col))
+            row = player_tuple2[0] - i
+            col = player_tuple2[1]
+            open_list.append((row,col))
+            row = player_tuple2[0] 
+            col = player_tuple2[1] + j
+            open_list.append((row,col))
+            row = player_tuple2[0]
+            col = player_tuple2[1] - j
+            open_list.append((row,col))
+            
+    distance = -1
+    expansion_list = {}
+    #search open list for least diagonal distance
+    for coords in open_list:
+        euc_dis = (abs(coords[0] - row_player) + abs(coords[1] - col_player))
+        if ((coords[0] < 0 or coords[1] < 0) or (coords[0] > 8 or coords[1] > 8)):
+            continue
+        expansion_list[(coords)] = euc_dis
+        if (euc_dis < distance or distance == -1):
+            distance = euc_dis
+
+    #
+    #
+    #AI CODE
+    obstacles_list = []
+    s = game.make_init_state(board.rows, 0, obstacles_list,
+                                [row_player,col_player], [row_player2,col_player2])
+    se = game.SearchEngine('astar', 'full')
+    final = game_sample_run.test(se, s, 'None', 'path', game.game_goal_fn)
+    # AI CODE
+    #
+    #
+    #
+    optimal_move = min(expansion_list, key=expansion_list.get)
+    board.placepiece("player2", optimal_move[0], optimal_move[1], player_tuple2[2])
+    board.CheckEat()
+    
+    
+def opponent_move():
+    player_tuple = board.pieces.get("player2")
+    #row = player_tuple[0] + 1
+    #col = player_tuple[1]
+    #board.placepiece("player2", row, col, player_tuple[2])
+    search_move()
+    root.after(difficulty, opponent_move)  # reschedule event in 2 seconds
 
 if __name__ == "__main__":
     start_game()

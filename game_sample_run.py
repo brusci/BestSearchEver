@@ -30,7 +30,7 @@ def test(se, s, strategy, cycle, goal_fn, heur=None):
 if __name__ == '__main__':
 
     # ====adjust these values to change test parameters:=====
-    size = 10
+    size = 8
     obstacles_list = []
     player = [1, 1]
     enemy = [0, 0]
@@ -48,8 +48,8 @@ if __name__ == '__main__':
 #     s = make_init_state(size, 0, obstacles_list, player, enemy)
 #     test(se, s, 'depth_first', 'none', game_goal_fn)
     
-#     s = make_init_state(size, 0, obstacles_list, player, enemy)
-#     test(se, s, 'depth_first', 'path', game_goal_fn)
+    s = make_init_state(size, 0, obstacles_list, player, enemy)
+    test(se, s, 'depth_first', 'path', game_goal_fn)
     
 #     s = make_init_state(size, 0, obstacles_list, player, enemy)
 #     test(se, s, 'depth_first', 'full', game_goal_fn)

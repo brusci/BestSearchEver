@@ -5,6 +5,9 @@ game STATESPACE
 from search import *
 from random import randint
 import copy
+import grid
+import game_sample_run
+
 
 ##################################################
 # The search space class 'game'                  #
@@ -21,6 +24,7 @@ class game(StateSpace):
         self.obstacles_list = obstacles_list #list of unnavigable loc
         self.player = copy.deepcopy(player)
         self.enemy = enemy
+        self.ideal_path = []
                                 
         # Each player and enemy itself a list in the format [x, y]    
     
@@ -85,14 +89,14 @@ class game(StateSpace):
         return (copy.deepcopy(self.enemy[0]), copy.deepcopy(self.enemy[1]))
         
     def print_state(self):
-        if self.parent:
-            print("Action= \"{}\", S{}, g-value = {}, (From S{})".format(self.action, self.index, self.gval, self.parent.index))
-        else:
-            print("Action= \"{}\", S{}, g-value = {}, (Initial State)".format(self.action, self.index, self.gval))
-            
+        #if self.parent:
+            #print("Action= \"{}\", S{}, g-value = {}, (From S{})".format(self.action, self.index, self.gval, self.parent.index))
+        #else:
+            #print("Action= \"{}\", S{}, g-value = {}, (Initial State)".format(self.action, self.index, self.gval))
+        self.ideal_path.append((self.player[0], self.player[1]))
         print("Time = {}".format(self.get_time()))
         print("Enemy is at location({},{})".format(self.enemy[0], self.enemy[1]))
-        print("Player is at location({},{})".format(self.player[0], self.player[1]))
+        #print("Player is at location({},{})".format(self.player[0], self.player[1]))
         print()
 
     def get_info(self): 
@@ -188,3 +192,14 @@ def test(nsize, nobstacles):
     se = SearchEngine('astar', 'full')
     se.trace_on(2)
     final = se.search(s0, game_goal_fn, heur_min_completion_time)
+
+if __name__ == "__main__":
+        # ====adjust these values to change test parameters:=====
+    size = 8
+    obstacles_list = []
+    player = [1, 1]
+    enemy = [0, 0]
+    s = make_init_state(8, 0, obstacles_list, [0,0], [2,2])
+    se = SearchEngine('astar', 'full')
+    game_sample_run.test(se, s, 'None', 'path', game_goal_fn)
+    grid.start_game() #starts grid.py game
