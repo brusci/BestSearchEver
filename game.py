@@ -14,6 +14,7 @@ import game_sample_run
 # This class is a sub-class of 'StateSpace'      #
 ##################################################
 
+
 class game(StateSpace):
     def __init__(self, action, gval, size, current_time, obstacles_list, player, enemy, parent = None):
         """Initialize a game search state object."""
@@ -215,4 +216,5 @@ if __name__ == "__main__":
     s = make_init_state(8, 0, obstacles_list, [0,0], [2,2])
     se = SearchEngine('astar', 'full')
     game_sample_run.test(se, s, 'None', 'path', game_goal_fn)
+    
     grid.start_game() #starts grid.py game

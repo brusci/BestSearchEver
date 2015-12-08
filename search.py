@@ -40,7 +40,6 @@ import heapq
 from collections import deque
 import os
 
-
 class StateSpace:
     '''Abstract class for defining State spaces for search routines'''
     n = 0
@@ -95,6 +94,7 @@ class StateSpace:
         while states:
             print(" ==> ", end="")
             states.pop().print_state()
+        
         print("")
  
     def has_path_cycle(self):

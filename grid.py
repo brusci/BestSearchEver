@@ -88,7 +88,43 @@ class GameBoard(tk.Frame):
                 self.placepiece(name, self.pieces[name][0], self.pieces[name][1], self.pieces[name][2])
         self.canvas.tag_raise("piece")
         self.canvas.tag_lower("square")
+    def refresh_no_event(self):
+        '''Redraw the board, possibly in response to window being resized'''
+        xsize = self.columns
+        ysize = self.rows
+        self.canvas.delete("square")
+        color = self.color2
+        player_tuple = self.pieces.get("player2") #get player tuple from dict in form (row, col, itemID)
+        row_player = player_tuple[0]
+        col_player = player_tuple[1]
 
+        player_tuple5 = self.pieces.get("player1") #get player tuple from dict in form (row, col, itemID)
+        row_player5 = player_tuple[0]
+        col_player5 = player_tuple[1]
+
+        
+        
+        for row in range(self.rows):
+            color = self.color1 if color == self.color2 else self.color2
+            for col in range(self.columns):
+                x1 = (col * self.size)
+                y1 = (row * self.size)
+                x2 = x1 + self.size
+                y2 = y1 + self.size
+                self.canvas.create_rectangle(x1, y1, x2, y2, outline="black", fill=color, tags="square", dash=(5,1))
+
+
+                if ((abs(row - row_player) == 0 and  abs(col - col_player) == 1)
+                    or (abs(row - row_player) == 1 and  abs(col - col_player) == 0)):
+                        color5 = '#00ffff'
+                        self.canvas.create_rectangle(x1, y1, x2, y2, outline="black", fill="blue", tags="square", stipple='gray25')
+                color = self.color1 if color == self.color2 else self.color2
+                
+        for name in self.pieces:
+            if (name == "player2"):
+                self.placepiece(name, self.pieces[name][0], self.pieces[name][1], self.pieces[name][2])
+        self.canvas.tag_raise("piece")
+        self.canvas.tag_lower("square")
     def leftClick(self, event): #left click handler
         print("clicked at", event.x, event.y)
         
@@ -115,22 +151,8 @@ class GameBoard(tk.Frame):
             self.placepiece("player1", randint(0, self.rows-1), randint(0, self.columns-1), self.pieces.get("player1")[2])
             self.placepiece("player2", randint(0, self.rows-1), randint(0, self.columns-1), self.pieces.get("player2")[2])
             
-
-                    
-            player_tuple = self.pieces.get("player2") #get player tuple from dict in form (row, col, itemID)
-            row_player = player_tuple[0]
-            col_player = player_tuple[1]
-            for row in range(self.rows):
-                for col in range(self.columns):
-                    x1 = (col * self.size)
-                    y1 = (row * self.size)
-                    x2 = x1 + self.size
-                    y2 = y1 + self.size
-                    if ((abs(row - row_player) == 0 and  abs(col - col_player) == 1)
-                        or (abs(row - row_player) == 1 and  abs(col - col_player) == 0)):
-                            color5 = '#00ffff'
-                            #self.canvas.create_rectangle(x1, y1, x2, y2, outline="black", fill="blue", tags="square", stipple='gray25')
-
+        self.refresh_no_event()
+        
                     
         
     def LeftHandler(self, event):
@@ -254,8 +276,10 @@ def start_game():
         #
         #
         #
+
         optimal_move = min(expansion_list, key=expansion_list.get)
         board.placepiece("player2", optimal_move[0], optimal_move[1], player_tuple2[2])
+        
         board.CheckEat()
         
         

@@ -1,5 +1,7 @@
 from game import *
 
+ideal_moves = []
+
 def test(se, s, strategy, cycle, goal_fn, heur=None):
     se.set_strategy(strategy, cycle)
         
