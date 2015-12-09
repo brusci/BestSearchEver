@@ -96,7 +96,22 @@ class StateSpace:
             states.pop().print_state()
         
         print("")
- 
+        
+    def get_path_info(self):
+        s = self
+        states = []
+        info = []
+        while s:
+            states.append(s)
+            s = s.parent
+        info.append(states.pop().get_info())
+        while states:
+            info.append(states.pop().get_info())
+        return info
+        
+    def get_info(self): 
+        print("Must be over ridden.")
+        
     def has_path_cycle(self):
         '''Returns true if self is equal to a prior state on its path'''
         s = self.parent
@@ -223,11 +238,15 @@ class Open:
             for nd in self.open:
                 print("   <S{}:{}:{}, g={}, h={}, f=g+h={}>".format(nd.state.index, nd.state.action, nd.state.hashable_state(), nd.gval, nd.hval, nd.gval+nd.hval), end="")
         print("}")
+    def get_length(self):
+        return len(self.open)
 
 class SearchEngine:
+    
     def __init__(self, strategy = 'depth_first', cc_level = 'default'):
         self.set_strategy(strategy, cc_level)
         self.trace = 0
+        self.max_open = 0
 
     def initStats(self):
         sNode.n = 0
@@ -235,6 +254,7 @@ class SearchEngine:
         self.total_search_time = 0
         self.cycle_check_pruned = 0
         self.total_search_time = os.times()[0]
+        self.max_open = 0
 
     def trace_on(self, level = 1):
         '''For debugging, set tracking level 1 or 2'''
@@ -323,17 +343,18 @@ class SearchEngine:
             goal_node.state.print_state()
             print("----------------------------")
             print("Solution Path:")
+#             print("[REDACTED FOR SPACE]")
             goal_node.state.print_path()
             self.total_search_time = os.times()[0] - self.total_search_time
             print("----------------------------")
-            print("Search time = {}, nodes expanded = {}, states generated = {}, states cycle check pruned = {}".format(self.total_search_time,sNode.n, StateSpace.n, self.cycle_check_pruned))
+            print("Search time = {}, nodes expanded = {}, states generated = {}, states cycle check pruned = {}, max nodes on open at a time = {}".format(self.total_search_time,sNode.n, StateSpace.n, self.cycle_check_pruned, self.max_open))
             return goal_node.state
         else:
         #exited the while without finding goal---search failed
             print("Search Failed! (strategy '{}') No solution found".format(self.get_strategy()))
             self.total_search_time = os.times()[0] - self.total_search_time
             print("----------------------------")
-            print("Search time = {}, nodes expanded = {}, states generated = {}, states cycle check pruned = {}".format(self.total_search_time,sNode.n, StateSpace.n, self.cycle_check_pruned))
+            print("Search time = {}, nodes expanded = {}, states generated = {}, states cycle check pruned = {}, max nodes on open at a time = {}".format(self.total_search_time,sNode.n, StateSpace.n, self.cycle_check_pruned, self.max_open))
             return False
 
     def searchOpen(self, OPEN, goal_fn, heur_fn):
@@ -347,6 +368,9 @@ class SearchEngine:
         #END TRACING
 
         while not OPEN.empty():
+            if(OPEN.get_length() > self.max_open):
+                self.max_open = OPEN.get_length()
+                
             node = OPEN.extract()
 
             #BEGIN TRACING
@@ -391,7 +415,8 @@ class SearchEngine:
                 #BEGIN TRACING
                 if self.trace > 1:
                     print("   TRACE: Successor State:", end="")
-                    print("<S{}:{}:{}, g={}, h={}, f=g+h={}>, ".format(succ.index, ss.action, succ.hashable_state(), succ.gval, heur_fn(succ), succ.gval+heur_fn(succ)), end="")
+#                     print("<S{}:{}:{}, g={}, h={}, f=g+h={}>, ".format(succ.index, ss.action, succ.hashable_state(), succ.gval, heur_fn(succ), succ.gval+heur_fn(succ)), end="")
+                    print("<S{}:{}:{}, g={}, h={}, f=g+h={}>, ".format(succ.index, succ.action, succ.hashable_state(), succ.gval, heur_fn(succ), succ.gval+heur_fn(succ)), end="")
                     if self.cycle_check == _CC_FULL and hash_state in self.cc_dictionary:
                         print("   TRACE: Already in CC_dict, CC_dict gval={}, successor state gval={}".format(self.cc_dictionary[hash_state], succ.gval))
                     if self.cycle_check == _CC_PATH and succ.has_path_cycle():
