@@ -13,3 +13,4 @@ Also found in report.pdf
 Using Search to Make a Chase Game AI.
 
 ![Report](https://github.com/brusci/BestSearchEver/blob/master/report.pdf)
+[Visit GitHub!](https://www.github.com)
