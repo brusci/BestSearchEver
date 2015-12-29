@@ -12,4 +12,4 @@ Also found in report.pdf
 
 Using Search to Make a Chase Game AI.
 
-![Report](https://github.com/brusci/BestSearchEver/report.pdf)
+![Report](https://github.com/brusci/BestSearchEver/blob/master/report.pdf)
