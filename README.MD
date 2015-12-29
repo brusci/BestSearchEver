@@ -1,5 +1,8 @@
 Using Search to Make a Chase Game AI.
 
+![Initial state of the game baord](/initial_state.JPG)
+
+
 Project for Introduction to AI.
 
 Project report:
